@@ -268,4 +268,5 @@ function doGet(e) {
 
   // JSON をレスポンスとして返す
   return ContentService.createTextOutput(JSON.stringify(jsonData)).setMimeType(ContentService.MimeType.JSON);
+}
 ```
