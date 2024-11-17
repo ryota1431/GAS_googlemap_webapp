@@ -1,0 +1,376 @@
+<style>
+/* 基本のリセット */
+body, h1, p, div {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ページ全体のスタイル */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #000000;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;  /* 余白をなくす */
+    padding: 0; /* 余白をなくす */
+    height: 100vh;  /* ビューポート全体の高さ */
+    display: flex;
+    justify-content: center;  /* 横方向で中央揃え */
+    align-items: center;      /* 縦方向で中央揃え */
+    flex-direction: column;
+}
+
+/* タイトルのスタイル */
+h1 {
+    margin-bottom: 20px;
+    font-size: 5rem;
+    color: #ffffff;
+    text-align: center;
+}
+
+/* 地図を囲むコンテナ */
+.map-container {
+    width: 90vw;  /* ビューポート幅に合わせる */
+    height: 90vh; /* ビューポート高さに合わせる */
+    background: #fff;
+    border-radius: 0;  /* 角を丸くしない */
+    bottom: 0;        /* 画面の下に配置 */
+    box-shadow: none;  /* シャドウを削除 */
+    overflow: hidden;  /* 画面からはみ出た部分を隠す */
+    z-index: 0;  /* 地図を最背面に配置 */
+}
+
+/* 地図のサイズを指定 */
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+/* 地図下の説明文のスタイル */
+.map-description {
+    padding: 20px;
+    text-align: center;
+    font-size: 1rem;
+    background-color: #fafafa;
+    border-top: 1px solid #ddd;
+}
+const darkModeStyle = [
+  { elementType: "geometry", stylers: [{ color: "#212121" }] },
+  { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#757575" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#212121" }] },
+  {
+    featureType: "administrative",
+    elementType: "geometry",
+    stylers: [{ color: "#757575" }],
+  },
+  {
+    featureType: "administrative.country",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#9e9e9e" }],
+  },
+  {
+    featureType: "administrative.land_parcel",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    featureType: "administrative.locality",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#bdbdbd" }],
+  },
+  {
+    featureType: "poi",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#757575" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "geometry",
+    stylers: [{ color: "#181818" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#616161" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#1b1b1b" }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry.fill",
+    stylers: [{ color: "#2c2c2c" }],
+  },
+  {
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#8a8a8a" }],
+  },
+  {
+    featureType: "road.arterial",
+    elementType: "geometry",
+    stylers: [{ color: "#373737" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#3c3c3c" }],
+  },
+  {
+    featureType: "road.highway.controlled_access",
+    elementType: "geometry",
+    stylers: [{ color: "#4e4e4e" }],
+  },
+  {
+    featureType: "road.local",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#616161" }],
+  },
+  {
+    featureType: "transit",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#757575" }],
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#000000" }],
+  },
+  {
+    featureType: "water",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#3d3d3d" }],
+  },
+];
+
+*,
+*:before,
+*:after {
+  -webkit-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
+html {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  font-size: 62.5%;
+}
+
+/* 背景用*/
+body {
+  padding: 30px;
+}
+
+.btn,
+a.btn,
+button.btn {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.5;
+  position: relative;
+  display: inline-block;
+  padding: 1rem 4rem;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s;
+  text-align: center;
+  vertical-align: middle;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  color: #212529;
+  border-radius: 0.5rem;
+}
+
+.btn-radius-gradient-wrap {
+  display: inline-block;
+
+  padding: 0.5rem;
+
+  border-radius: 100vh;
+  background: #f2f5f6;
+  background: -webkit-linear-gradient(
+    to top,
+    #f2f5f6 0%,
+    #e3eaed 37%,
+    #96a1a5 100%
+  );
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(#f2f5f6),
+    color-stop(37%, #e3eaed),
+    to(#96a1a5)
+  );
+  background: -webkit-linear-gradient(
+    top,
+    #f2f5f6 0%,
+    #e3eaed 37%,
+    #96a1a5 100%
+  );
+  background: linear-gradient(to bottom, #f2f5f6 0%, #e3eaed 37%, #96a1a5 100%);
+
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2f5f6', endColorstr='#96a1a5', GradientType=0);
+}
+
+a.btn-radius-gradient {
+  border-radius: 100vh;
+  background: #e3eaed;
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(#e3eaed),
+    to(#f2f5f6)
+  );
+  background: -webkit-linear-gradient(top, #e3eaed 0%, #f2f5f6 100%);
+  background: linear-gradient(to bottom, #e3eaed 0%, #f2f5f6 100%);
+
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#e3eaed', endColorstr='#f2f5f6', GradientType=0);
+}
+
+a.btn-radius-gradient:hover {
+  -webkit-transform: scale(1.05);
+  transform: scale(1.05);
+}
+
+
+.cp_ipselect07 {
+  position: fixed; /* 上部に固定表示 */
+  top: 0;          /* ページの最上部に配置 */
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  margin: 2em auto;
+  z-index: 1; /* 地図が他の要素の後ろに隠れないように */
+}
+/*ラジオボタンの制御*/
+.cp_ipselect07 > input {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 56px;
+  cursor: pointer;
+  opacity: 0;
+}
+.cp_ipselect07 label.option input {
+  display: none;
+}
+.cp_ipselect07 > i.toggle {
+  position: absolute;
+  z-index: 4;
+  top: 1.6em;
+  right: 1.5em;
+  color: #ffffff;
+}
+/*プルダウンの三角を設定*/
+.cp_ipselect07 .cp_sl07_arrowup:before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  content: '';
+  width: 16px;
+  height: 8px;
+  background: #ffffff;
+  clip-path: polygon(0 100%, 100% 100%, 50% 0);
+  transition: all 250ms cubic-bezier(.4,.25,.3,1);
+}
+.cp_ipselect07 .cp_sl07_arrowdown:before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  content: '';
+  width: 16px;
+  height: 8px;
+  background: #ffffff;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transition: all 250ms cubic-bezier(.4,.25,.3,1);
+}
+
+.cp_ipselect07 .cp_sl07_title,
+.cp_ipselect07 .cp_sl07_selectlabel {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background: #da3c41;
+}
+/*ラジオボタンにチェックが入っていない時の処理*/
+.cp_ipselect07 > input:not(:checked) {
+  z-index: 4;
+}
+.cp_ipselect07 > input:not(:checked) ~ label.option > span.cp_sl07_title {
+  display: none;
+}
+.cp_ipselect07 > input:not(:checked) ~ i.toggle.cp_sl07_arrowup {
+  display: none;
+}
+.cp_ipselect07 > input:not(:checked) ~ i.toggle.cp_sl07_arrowdown {
+  display: block;
+}
+/*ラジオボタンにチェックが入った時の処理*/
+.cp_ipselect07 > input:checked ~ i.toggle.cp_sl07_arrowdown {
+  display: none;
+}
+.cp_ipselect07 > input:checked ~ i.toggle.cp_sl07_arrowup {
+  display: block;
+}
+.cp_ipselect07 > input:checked div.options label.option .cp_sl07_title {
+  display: none !important;
+}
+.cp_ipselect07 label.option input:checked ~ span.cp_sl07_title {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 56px;
+  color: inherit;
+  border-top: 0;
+  background: #1b2538;
+}
+/*セレクト内テキストの設定*/
+.cp_ipselect07 > span.cp_sl07_selectlabel,
+.cp_ipselect07 label.option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 56px;
+  color: #ffffff;
+  border-top: 0;
+  transition: all 1s ease-out;
+}
+.cp_ipselect07 > span.cp_sl07_selectlabel {
+  padding-left: 1em;
+}
+.cp_ipselect07 label.option span.cp_sl07_title {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-left: 2em;
+  height: 56px;
+  z-index: 2;
+  transition: 0.3s ease-out;
+}
+.cp_ipselect07 label.option span.cp_sl07_title:hover {
+  color: #ffffff;
+  background: #1b2538;
+}
+
+
+
+
+</style>
