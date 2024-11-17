@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps データ表示</title>
+    <?!= HtmlService.createHtmlOutputFromFile('css').getContent(); ?>
+</head>
+<body>
+  <div class="cp_ipselect07">
+    <input type="radio" name="option" id="choose" checked>
+    <i class="toggle cp_sl07_arrowdown"></i>
+    <i class="toggle cp_sl07_arrowup"></i>
+    <span class="cp_sl07_selectlabel">Choose</span>
+
+    <? for (var i = 0; i < dataList.length; i++) { ?>
+    <label class="option">
+      <input type="radio" name="option" value="<?= dataList[i][0] ?>" onchange="showMap(this.value)">
+      <span class="cp_sl07_title"><?= dataList[i][1] ?></span>
+    </label>
+    <? } ?>
+</div>
+
+<!-- 各センサーデータの Map を表示 -->
+<? for (var i = 0; i < dataList.length; i++) { ?>
+  <h1 id="title-<?= dataList[i][0] ?>" style="display: none;"><?= dataList[i][1] ?></h1>
+  <div class="map-container" id="container-<?= dataList[i][0] ?>" style="height: 400px; display: none;">
+    <div id="<?= dataList[i][0] ?>" style="height: 100%;"></div>
+  </div>
+<? } ?>
+
+
+  <!--
+  <div class="cp_ipselect07">
+    <input type="radio" name="option">
+    <i class="toggle cp_sl07_arrowdown"></i>
+    <i class="toggle cp_sl07_arrowup"></i>
+    <span class="cp_sl07_selectlabel">Choose</span>
+
+    <? for (var i = 0; i < dataList.length; i++) { ?>
+    <label class="option">
+    <input type="radio" name="option">
+    <span class="cp_sl07_title"><?= dataList[i][1] ?></span>
+    </label>
+    <? } ?>
+  </div>
+  -->
+
+  <!-- 各センサーデータのMapを表示 -->
+  <!--
+  <? for (var i = 0; i < dataList.length; i++) { ?>
+  <h1 id="temp"><?= dataList[i][1] ?></h1>
+  <div class="map-container">
+    <div id="<?= dataList[i][0] ?>" style="height: 400px;"></div>
+  </div>
+  <? } ?>
+  -->
+
+  <!-- for文使ってなかったときのMapの表示 -->
+  <!--
+    <h1 id="temp">気温データの表示</h1>
+    <div class="map-container">
+    <div id="map1" style="height: 400px;"></div>
+    </div>
+
+    <h1 id="press">気圧データの表示</h1>
+    <div class="map-container">
+    <div id="map2" style="height: 400px;"></div>
+    </div>
+
+    <h1 id="hum">湿度データの表示</h1>
+    <div class="map-container">
+    <div id="map3" style="height: 400px;"></div>
+    </div>
+  -->
+
+    <!-- Google Maps API の読み込み -->
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0cxC6DzTxBf_XVMsfpRCn5ppGc-FpGFs&libraries=visualization,marker&callback=initMap&v=weekly"></script>
+
+<!-- JavaScript(別ファイルに分けるとスクリプトレットが使えなくなる) -->
+<!-- JavaScript(別ファイルに分けるとスクリプトレットが使えなくなる) -->
+<script>
+const maps = {}; // マップインスタンスを保存するオブジェクト
+const apiUrl = 'https://script.google.com/macros/s/AKfycbzQlHI563x1UTvCi645dFS8IciQ-iQJxpCj9ys6FW6R_x-juOz1MU0zlEaFDcYWtsY/exec';
+
+//表示するマップとマーカー
+<? for (let i = 0; i < dataList.length ; i++) { ?>
+  let <? output.append(dataList[i][0]); ?>;
+<? } ?>
+
+<? for (let i = 0; i < dataList.length ; i++) { ?>
+  let <? output.append(dataList[i][4]); ?> = [];
+<? } ?>
+
+// マップの初期化
+function initMap() {
+  const centerLocation = { lat: 37.900175106232396, lng: 140.1043221055276 };
+  //表示するマップの定義
+  <? for (let i = 0; i < dataList.length ; i++) { ?>
+      <? output.append(dataList[i][0]); ?> = new google.maps.Map(document.getElementById('<?= dataList[i][0] ?>'), {
+        zoom: 17,
+        center: centerLocation,
+        mapTypeId: 'terrain',
+        styles: darkModeStyle,
+      });
+  <? } ?>
+
+  // データの初回取得
+  <? for (let i = 0; i < dataList.length; i++) { ?>
+  async function <? output.append('update' + dataList[i][0] + 'Data'); ?>() {
+    const apiUrl = 'https://script.google.com/macros/s/AKfycbzQlHI563x1UTvCi645dFS8IciQ-iQJxpCj9ys6FW6R_x-juOz1MU0zlEaFDcYWtsY/exec';
+    const <? output.append(dataList[i][0] + 'Colors'); ?> = [
+      <? for (let j = 0; j < dataList[i][2].length; j++){ ?>
+        [ <?= dataList[i][2][j][0] ?> ,<?= dataList[i][2][j][1] ?> ],
+      <? } ?>
+      ];
+    await updateMapData(apiUrl, <? output.append(dataList[i][0]); ?>, <? output.append(dataList[i][4]); ?>, '<?= dataList[i][0] ?>', <? output.append(dataList[i][0] + 'Colors'); ?>);
+  }
+  <? } ?>
+
+
+  <? for (let i = 0; i < dataList.length; i++) { ?>
+  <? output.append('update' + dataList[i][0] + 'Data'); ?>();
+  <? } ?>
+
+<? for (let i = 0; i < dataList.length; i++) { ?>
+  setInterval(<? output.append('update' + dataList[i][0] + 'Data') ?>, 60000);
+
+<? } ?>
+}
+
+// マップにデータを表示する関数
+async function updateMapData(apiUrl, map, markers, dataKey, colorList) {
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    // MAC アドレスごとに最新のデータを取得
+    const latestDataByMac = {};
+
+    data.forEach(item => {
+      const macAddress = item["MAC Address"];
+      const epochTime = item["Epoch Time"];
+
+      if (!latestDataByMac[macAddress] || epochTime > latestDataByMac[macAddress]["Epoch Time"]) {
+        latestDataByMac[macAddress] = item;
+      }
+    });
+
+    // 最新データをマップに表示
+    Object.values(latestDataByMac).forEach(item => {
+      const lat = item["Latitude"];
+      const lng = item["Longitude"];
+      const value = item[dataKey];
+
+      addMarker({ lat, lng, value, dataKey }, map, markers, colorList);
+    });
+  } catch (error) {
+    console.error("データ取得エラー:", error);
+  }
+}
+
+// マーカーを追加する関数
+function addMarker({ lat, lng, value, dataKey }, map, markers, colorList) {
+  const label = `${value}${dataKey === "Temperature" ? "℃" : dataKey === "Pressure" ? "hPa" : dataKey === "Illuminance" ? "lux" : "%"}`;
+
+  for (var i = 0; i < colorList.length; i++){
+    if (value > colorList[i][0]) {
+      var color = colorList[i][1];
+      break;
+    }
+  }
+  if (value < colorList[colorList.length - 1][0]){
+    var color = `rgb(0, 0, 0)`;
+  }
+
+  const marker = new google.maps.Marker({
+    position: { lat, lng },
+    map: map,
+    label: {
+      text: label,
+      color: color,
+      fontSize: "24px",
+    },
+    icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: color,
+        fillOpacity: 0.5,
+        scale: 0,
+        strokeColor: "white",
+        strokeWeight: 0.5,
+      },
+  });
+  
+
+  
+  const marker2 = new google.maps.Marker({
+    position: { lat, lng },
+    map: map,
+    icon: getCircleStyle(value, colorList),
+  });
+  
+
+  marker.isHidden = false;
+  marker2.isHidden = false;
+
+  markers.push(marker);
+  markers.push(marker2);
+
+  google.maps.event.addListener(map, 'zoom_changed', () => {
+    const zoom = map.getZoom();
+    // ズームレベルが 14 より大きい場合に表示、そうでない場合は非表示
+    if (zoom > 16) {
+      marker.setMap(map);
+      marker2.setMap(null);
+      marker.isHidden = false;
+      marker2.isHidden = true;
+    } else {
+      marker.setMap(null);
+      marker2.setMap(map);
+      marker.isHidden = true;
+      marker2.isHidden = false;
+    }
+  });
+}
+
+// 気温、気圧、湿度に応じたマーカーのスタイル
+function getCircleStyle(value, colorList) {
+  for (var i = 0; i < colorList.length; i++){
+    if (value > colorList[i][0]) {
+      var color = colorList[i][1];
+      break;
+    }
+  }
+  if (value < colorList[colorList.length - 1][0]){
+    var color = `rgb(0, 0, 0)`;
+  }
+
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    fillColor: color,
+    fillOpacity: 0.5,
+    scale: 10,
+    strokeColor: "white",
+    strokeWeight: 0.5,
+  };
+}
+
+
+function showMap(selectedId) {
+  // すべての地図コンテナとタイトルを非表示にする
+  <? for (var i = 0; i < dataList.length; i++) { ?>
+    document.getElementById("container-<?= dataList[i][0] ?>").style.display = "none";
+    document.getElementById("title-<?= dataList[i][0] ?>").style.display = "none";
+  <? } ?>
+
+  // 選択された地図コンテナとタイトルを表示する
+  document.getElementById("container-" + selectedId).style.display = "block";
+  document.getElementById("title-" + selectedId).style.display = "block";
+}
+
+// ダークモードスタイル
+const darkModeStyle = [
+  { elementType: "geometry", stylers: [{ color: "#212121" }] },
+  { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#757575" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#212121" }] },
+  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#181818" }] },
+  { featureType: "road", elementType: "geometry.fill", stylers: [{ color: "#2c2c2c" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#000000" }] },
+];
+
+window.initMap = initMap;
+</script>
+</body>
+</html>
