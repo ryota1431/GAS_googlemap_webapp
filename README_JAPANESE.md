@@ -1,3 +1,125 @@
+# GAS Google Map Web App
+
+このプロジェクトは、Google Apps Script (GAS) を使用してセンサーデータをGoogleマップ上に表示するウェブアプリケーションです。気温、気圧、湿度、照度などのデータをカラーマーカーで視覚化します。
+
+## 特徴
+
+- **気温データ**: カラーマーカーで気温データを表示します。
+- **気圧データ**: カラーマーカーで気圧データを表示します。
+- **湿度データ**: カラーマーカーで湿度データを表示します。
+- **照度データ**: カラーマーカーで照度データを表示します。
+- **動的データ更新**: センサーデータを毎分取得して更新します。
+- **レスポンシブデザイン**: ユーザーの操作に基づいて地図のズームやマーカーの表示を調整します。
+
+## ファイル構成
+
+- **code.gs**: ウェブアプリのロジックとデータ視覚化を処理するメインのGoogle Apps Scriptコード。
+- **list.html**: ウェブインターフェースをレンダリングし、Googleマップを統合するためのHTMLテンプレートファイル。
+- **README.md**: このファイル。プロジェクトの概要を提供します。
+
+## セットアップ
+
+1. **リポジトリをクローン**:
+    ```bash
+    git clone https://github.com/ryota1431/GAS_googlemap_webapp.git
+    cd GAS_googlemap_webapp
+    ```
+
+2. **Google Apps Scriptのセットアップ**:
+    - Google ドライブを開きます。
+    - 新しいGoogle Apps Scriptプロジェクトを作成します。
+    - `code.gs`の内容をスクリプトエディタにコピーします。
+    - Apps ScriptプロジェクトにHTMLファイルを作成し、`list.html`の内容をコピーします。
+
+3. **Google Maps APIキーの取得**:
+    - [Google Cloud Console](https://console.cloud.google.com/)からGoogle Maps APIキーを取得します。
+    - `list.html`ファイル内の`YOUR_API_KEY`を実際のAPIキーに置き換えます。
+
+4. **ウェブアプリのデプロイ**:
+    - Apps Scriptエディタで「デプロイ」 > 「新しいデプロイ」をクリックします。
+    - 「ウェブアプリ」を選択し、設定を構成します。
+    - ウェブアプリをデプロイし、ウェブアプリのURLをメモします。
+
+## 使用方法
+
+- ブラウザでデプロイされたウェブアプリのURLを開きます。
+- 表示するデータのタイプ（気温、気圧、湿度、または照度）を選択します。
+- 選択したデータタイプに基づいてマップにマーカーが表示され、最新のセンサーデータで毎分更新されます。
+
+## センサーから取得するデータを追加する方法
+
+新しいセンサーデータを追加するには、以下の手順に従ってください。
+
+1. **データリストの作成**: `code.gs`ファイルで新しいセンサーデータのリストを作成します。たとえば、風速データを追加する場合:
+    ```javascript
+    var windSpeedList = ["WindSpeed", "風速データの表示", colorlist5, "textSize1", "wind_marker", true];
+    ```
+
+2. **カラーリストの定義**: 新しいデータタイプに対応するカラーリストを定義します。例えば:
+    ```javascript
+    var colorlist5 = [
+      [30, `rgb(180, 0, 104)`],
+      [20, `rgb(255, 40, 0)`],
+      [10, `rgb(255, 153, 0)`],
+      [0, `rgb(0, 150, 255)`],
+    ];
+    ```
+
+3. **データリストに追加**: `dataList`に新しいデータリストを追加します。
+    ```javascript
+    const dataList = [tempList, pressList, humList, illList, windSpeedList];
+    ```
+
+4. **HTMLテンプレートの更新**: `list.html`ファイルで新しいデータタイプを表示するためのラベルとマップコンテナを追加します。
+    ```html
+    <? for (var i = 0; i < dataList.length; i++) { ?>
+      <label class="option">
+        <input type="radio" name="option" value="<?= dataList[i][0] ?>" onchange="showMap(this.value)">
+        <span class="cp_sl07_title"><?= dataList[i][1] ?></span>
+      </label>
+    <? } ?>
+    ```
+
+5. **JavaScriptの更新**: 新しいデータタイプのマーカーとデータ更新関数を追加します。
+    ```javascript
+    <? for (let i = 0; i < dataList.length; i++) { ?>
+      let <? output.append(dataList[i][4]); ?> = [];
+    <? } ?>
+
+    async function <? output.append('update' + dataList[i][0] + 'Data'); ?>() {
+      const apiUrl = 'https://script.google.com/macros/s/AKfycbzQlHI563x1UTvCi645dFS8IciQ-iQJxpCj9ys6FW6R_x-juOz1MU0zlEaFDcYWtsY/exec';
+      const <? output.append(dataList[i][0] + 'Colors'); ?> = [
+        <? for (let j = 0; j < dataList[i][2].length; j++){ ?>
+          [ <?= dataList[i][2][j][0] ?> ,<?= dataList[i][2][j][1] ?> ],
+        <? } ?>
+        ];
+      await updateMapData(apiUrl, <? output.append(dataList[i][0]); ?>, <? output.append(dataList[i][4]); ?>, '<?= dataList[i][0] ?>', <? output.append(dataList[i][0] + 'Colors'); ?>);
+    }
+    ```
+
+これで新しいセンサーデータを表示する準備が整いました。
+
+## コントリビュート
+
+1. リポジトリをフォークします。
+2. 新しいブランチを作成します (`git checkout -b feature-branch`)。
+3. 変更をコミットします (`git commit -am 'Add new feature'`)。
+4. ブランチをプッシュします (`git push origin feature-branch`)。
+5. プルリクエストを開きます。
+
+## ライセンス
+
+このプロジェクトはMITライセンスの下でライセンスされています。
+
+## 謝辞
+
+- Google Maps API
+- Google Apps Script
+
+
+
+
+
 # `list.html` JavaScript 関数仕様書
 
 ## 1. 定数定義
