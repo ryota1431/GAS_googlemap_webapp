@@ -234,3 +234,38 @@ map: Googleマップインスタンス
 markers: マーカーを格納する配列
 colorList: データ値に対応するカラーリスト
 戻り値: なし
+
+
+
+
+
+
+# Spread Sheet側のGASのコード
+```javascript
+/**
+ * スプレッドシートのデータを JSON 形式で返す関数
+ */
+function doGet(e) {
+  // スプレッドシートのIDを指定
+  const sheetId = '1ywFj1Trf-Va0TR5-WG7uPlH_dWaFYsx4_LFNx2tk8bA';
+  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName('sensor');
+  const data = sheet.getDataRange().getValues();
+
+  // ヘッダー（1行目）をキーとして使用
+  const headers = data[0];
+  const jsonData = [];
+
+  // 2行目以降のデータを JSON オブジェクトに変換
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const obj = {};
+    headers.forEach((header, index) => {
+      obj[header] = row[index];
+    });
+    jsonData.push(obj);
+  }
+  Logger.log(jsonData);
+
+  // JSON をレスポンスとして返す
+  return ContentService.createTextOutput(JSON.stringify(jsonData)).setMimeType(ContentService.MimeType.JSON);
+```
