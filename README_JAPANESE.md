@@ -70,30 +70,18 @@
     const dataList = [tempList, pressList, humList, illList, windSpeedList];
     ```
 
-4. **HTMLテンプレートの更新**: `list.html`ファイルで新しいデータタイプを表示するためのラベルとマップコンテナを追加します。
-    ```html
-    <? for (var i = 0; i < dataList.length; i++) { ?>
-      <label class="option">
-        <input type="radio" name="option" value="<?= dataList[i][0] ?>" onchange="showMap(this.value)">
-        <span class="cp_sl07_title"><?= dataList[i][1] ?></span>
-      </label>
-    <? } ?>
-    ```
-
-5. **JavaScriptの更新**: 新しいデータタイプのマーカーとデータ更新関数を追加します。
+4. **HTMLテンプレートの更新**: `code.gs`
     ```javascript
-    <? for (let i = 0; i < dataList.length; i++) { ?>
-      let <? output.append(dataList[i][4]); ?> = [];
-    <? } ?>
-
-    async function <? output.append('update' + dataList[i][0] + 'Data'); ?>() {
-      const apiUrl = 'https://script.google.com/macros/s/AKfycbzQlHI563x1UTvCi645dFS8IciQ-iQJxpCj9ys6FW6R_x-juOz1MU0zlEaFDcYWtsY/exec';
-      const <? output.append(dataList[i][0] + 'Colors'); ?> = [
-        <? for (let j = 0; j < dataList[i][2].length; j++){ ?>
-          [ <?= dataList[i][2][j][0] ?> ,<?= dataList[i][2][j][1] ?> ],
-        <? } ?>
-        ];
-      await updateMapData(apiUrl, <? output.append(dataList[i][0]); ?>, <? output.append(dataList[i][4]); ?>, '<?= dataList[i][0] ?>', <? output.append(dataList[i][0] + 'Colors'); ?>);
+    function doGet() {
+      // テンプレートを使ってHTML文書を作って return
+      let template = HtmlService.createTemplateFromFile("list");
+      template.tempList = tempList;
+      template.pressList = pressList;
+      template.humList = humList;
+      template.dataList = dataList;
+      template.illList = illList;
+      template.windSpeedList = windSpeedList;
+      return template.evaluate();
     }
     ```
 
