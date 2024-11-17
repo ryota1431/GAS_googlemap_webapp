@@ -103,6 +103,10 @@ function initMap() {
         mapTypeId: 'terrain',
         styles: darkModeStyle,
       });
+  // ズーム変更時にマーカーの表示を更新
+    google.maps.event.addListener(<? output.append(dataList[i][0]); ?>, 'zoom_changed', () => {
+      updateMarkerVisibility(<? output.append(dataList[i][0]); ?>, <? output.append(dataList[i][4]); ?>);
+    });
   <? } ?>
 
   // データの初回取得
@@ -123,10 +127,10 @@ function initMap() {
   <? output.append('update' + dataList[i][0] + 'Data'); ?>();
   <? } ?>
 
-<? for (let i = 0; i < dataList.length; i++) { ?>
-  setInterval(<? output.append('update' + dataList[i][0] + 'Data') ?>, 60000);
+  <? for (let i = 0; i < dataList.length; i++) { ?>
+    setInterval(<? output.append('update' + dataList[i][0] + 'Data') ?>, 60000);
+  <? } ?>
 
-<? } ?>
 }
 
 // マップにデータを表示する関数
@@ -146,6 +150,11 @@ async function updateMapData(apiUrl, map, markers, dataKey, colorList) {
         latestDataByMac[macAddress] = item;
       }
     });
+
+
+    //マーカーを削除する
+    markers.forEach(marker => marker.setMap(null));
+    markers.length = 0;
 
     // 最新データをマップに表示
     Object.values(latestDataByMac).forEach(item => {
@@ -174,9 +183,9 @@ function addMarker({ lat, lng, value, dataKey }, map, markers, colorList) {
     var color = `rgb(0, 0, 0)`;
   }
 
-  const marker = new google.maps.Marker({
+  var marker = new google.maps.Marker({
     position: { lat, lng },
-    map: map,
+    map: null,
     label: {
       text: label,
       color: color,
@@ -194,34 +203,28 @@ function addMarker({ lat, lng, value, dataKey }, map, markers, colorList) {
   
 
   
-  const marker2 = new google.maps.Marker({
+  var marker2 = new google.maps.Marker({
     position: { lat, lng },
-    map: map,
+    map: null,
     icon: getCircleStyle(value, colorList),
   });
-  
 
-  marker.isHidden = false;
-  marker2.isHidden = false;
+  const zoom = map.getZoom();
+
+  if (zoom > 16) {
+    marker.setMap(map);
+    marker2.setMap(null);
+    }
+   else {
+    marker.setMap(null);
+    marker2.setMap(map);
+  }
+
+  marker.num = 1;
+  marker2.num = 2;
 
   markers.push(marker);
   markers.push(marker2);
-
-  google.maps.event.addListener(map, 'zoom_changed', () => {
-    const zoom = map.getZoom();
-    // ズームレベルが 14 より大きい場合に表示、そうでない場合は非表示
-    if (zoom > 16) {
-      marker.setMap(map);
-      marker2.setMap(null);
-      marker.isHidden = false;
-      marker2.isHidden = true;
-    } else {
-      marker.setMap(null);
-      marker2.setMap(map);
-      marker.isHidden = true;
-      marker2.isHidden = false;
-    }
-  });
 }
 
 // 気温、気圧、湿度に応じたマーカーのスタイル
@@ -244,6 +247,28 @@ function getCircleStyle(value, colorList) {
     strokeColor: "white",
     strokeWeight: 0.5,
   };
+}
+
+function updateMarkerVisibility(map, markers) {
+  const zoom = map.getZoom();
+
+  markers.forEach(marker => {
+    if (zoom > 16) {
+      if (marker.num == 1) {
+        // マーカー1を表示、マーカー2を非表示
+        marker.setMap(map);
+      } else if (marker.num == 2) {
+        marker.setMap(null);
+      }
+    } else {
+      if (marker.num == 1) {
+        // マーカー2を表示、マーカー1を非表示
+        marker.setMap(null);
+      } else if (marker.num == 2) {
+        marker.setMap(map);
+      }
+    }
+  });
 }
 
 
