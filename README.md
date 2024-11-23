@@ -39,6 +39,7 @@ This project is a Google Apps Script (GAS) web application for displaying sensor
     - Click on `Deploy` > `New deployment` in the Apps Script editor.
     - Choose `Web app` and configure the settings.
     - Deploy the web app and note the web app URL.
+https://script.google.com/macros/s/AKfycbyaWH8fVILykQwqZJg-jTa71IzPdiVsb_NV_7AO8v6e3wF1opAyHfVhP9vJiKC6zk5J/exec
 
 ## Usage
 
